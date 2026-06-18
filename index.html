@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AttendX Monorepo Root - Diagnosis</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        h1 {
+            color: #ef4444;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #cbd5e1;
+            margin-bottom: 24px;
+        }
+        ol {
+            text-align: left;
+            margin: 0 auto 24px auto;
+            max-width: 450px;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        code {
+            background-color: #0f172a;
+            color: #38bdf8;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .badge {
+            background-color: #ef4444;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="badge">DIAGNOSTIC PAGE</span>
+        <h1>Vercel Root Directory Configuration Issue Detected</h1>
+        <p>If you are seeing this page, it means Vercel is deploying the <strong>root folder</strong> of your repository instead of the <strong>frontend</strong> subfolder. This is why you got a 404 error before (since there was no homepage in the root).</p>
+        <p>To fix this and load your Next.js application, follow these simple steps:</p>
+        <ol>
+            <li>Go to your <strong>Vercel Dashboard</strong>.</li>
+            <li>Select the <strong>attend-x-web-frontend</strong> project.</li>
+            <li>Click on the <strong>Settings</strong> tab at the top of the project page.</li>
+            <li>Under the <strong>General</strong> tab, look for the <strong>Root Directory</strong> section.</li>
+            <li>Set the value to <code>frontend</code>.</li>
+            <li>Click <strong>Save</strong>.</li>
+            <li>Go to the <strong>Deployments</strong> tab, click the three dots next to your latest deployment, and select <strong>Redeploy</strong> (or push a new commit).</li>
+        </ol>
+        <p>Once you change that, your Next.js application will compile and serve from the root URL correctly!</p>
+    </div>
+</body>
+</html>

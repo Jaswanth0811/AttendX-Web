@@ -545,7 +545,7 @@ router.post('/students/bulk-import', async (req: Request, res: Response): Promis
         );
         await query(
           'INSERT INTO student_profiles (id, user_id, roll_number, department_id, semester_id, section_id, phone) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-          [profileId, userId, std.rollNumber, std.departmentId || 'd1000000-0000-0000-0000-000000000001', std.semesterId || 's1000000-0000-0000-0000-000000000003', std.sectionId || 'c1000000-0000-0000-0000-000000000001', std.phone]
+          [profileId, userId, std.rollNumber, std.departmentId || 'd1000000-0000-0000-0000-000000000001', std.semesterId || 'e1000000-0000-0000-0000-000000000003', std.sectionId || 'c1000000-0000-0000-0000-000000000001', std.phone]
         );
       }
     }

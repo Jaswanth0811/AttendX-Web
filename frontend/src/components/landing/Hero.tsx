@@ -52,14 +52,14 @@ export default function Hero() {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 dark:text-white leading-[1.1] mb-6">
               Smart{' '}
               <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 dark:from-indigo-400 dark:via-purple-400 dark:to-indigo-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-[gradient-shift_3s_ease-in-out_infinite]">
-                QR-Based
+                Code-Based
               </span>{' '}
               Attendance for Colleges
             </h1>
 
             {/* Description */}
             <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Revolutionize attendance tracking with secure QR codes, real-time monitoring, and comprehensive analytics. Built for modern educational institutions.
+              Revolutionize attendance tracking with secure rotating codes, real-time monitoring, and comprehensive analytics. Built for modern educational institutions.
             </p>
 
             {/* CTA Buttons */}

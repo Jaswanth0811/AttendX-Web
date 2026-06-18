@@ -51,9 +51,11 @@ export default function LandingNavbar() {
         <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/25 group-hover:shadow-indigo-500/40 transition-shadow">
-              <QrCode className="w-5 h-5 text-white" />
-            </div>
+            <img
+              src="/attendx-logo.png"
+              alt="AttendX Logo"
+              className="w-10 h-10 object-contain rounded-xl shadow-lg transition-transform duration-350 group-hover:scale-105"
+            />
             <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 dark:from-indigo-400 dark:to-purple-400 bg-clip-text text-transparent">
               AttendX
             </span>

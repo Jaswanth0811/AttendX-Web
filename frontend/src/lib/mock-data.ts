@@ -46,7 +46,7 @@ export const mockSections: Section[] = [
 
 // ---- Users ----
 export const mockUsers: User[] = [
-  { id: 'user-admin', email: 'admin@attendx.edu', role: 'admin', firstName: 'System', lastName: 'Administrator', name: 'System Administrator', isActive: true, createdAt: '2025-07-01' },
+  { id: 'user-admin', email: 'Jaswanthganta2005@outlook.com', role: 'admin', firstName: 'System', lastName: 'Administrator', name: 'System Administrator', isActive: true, createdAt: '2025-07-01' },
   { id: 'user-fac-1', email: 'dr.kumar@attendx.edu', role: 'faculty', firstName: 'Rajesh', lastName: 'Kumar', name: 'Dr. Rajesh Kumar', isActive: true, createdAt: '2025-07-01' },
   { id: 'user-fac-2', email: 'prof.sharma@attendx.edu', role: 'faculty', firstName: 'Priya', lastName: 'Sharma', name: 'Prof. Priya Sharma', isActive: true, createdAt: '2025-07-01' },
   { id: 'user-fac-3', email: 'dr.patel@attendx.edu', role: 'faculty', firstName: 'Amit', lastName: 'Patel', name: 'Dr. Amit Patel', isActive: true, createdAt: '2025-07-01' },

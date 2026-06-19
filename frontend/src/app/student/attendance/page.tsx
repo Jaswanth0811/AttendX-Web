@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import { mockSubjects, mockFacultyProfiles, mockUsers } from '@/lib/mock-data';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -12,54 +11,65 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, History, Calendar } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-
-interface StudentHistoryRecord {
-  id: string;
-  date: string;
-  subjectId: string;
-  facultyId: string;
-  status: 'present' | 'absent' | 'late';
-  time: string;
-}
+import { History, Calendar } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
 export default function StudentAttendanceHistoryPage() {
+  const [loading, setLoading] = useState(true);
+  const [records, setRecords] = useState<any[]>([]);
   const [subjectFilter, setSubjectFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  // Generating mock history data for Student Rahul Sharma
-  const mockHistoryRecords: StudentHistoryRecord[] = [
-    { id: 'rec-1', date: '2026-06-18', subjectId: 'sub-1', facultyId: 'fac-1', status: 'present', time: '09:05 AM' },
-    { id: 'rec-2', date: '2026-06-18', subjectId: 'sub-2', facultyId: 'fac-2', status: 'present', time: '10:02 AM' },
-    { id: 'rec-3', date: '2026-06-17', subjectId: 'sub-1', facultyId: 'fac-1', status: 'present', time: '09:08 AM' },
-    { id: 'rec-4', date: '2026-06-17', subjectId: 'sub-3', facultyId: 'fac-2', status: 'late', time: '10:18 AM' },
-    { id: 'rec-5', date: '2026-06-16', subjectId: 'sub-4', facultyId: 'fac-3', status: 'absent', time: '---' },
-    { id: 'rec-6', date: '2026-06-15', subjectId: 'sub-2', facultyId: 'fac-2', status: 'present', time: '10:04 AM' },
-    { id: 'rec-7', date: '2026-06-15', subjectId: 'sub-3', facultyId: 'fac-2', status: 'present', time: '11:02 AM' },
-    { id: 'rec-8', date: '2026-06-12', subjectId: 'sub-4', facultyId: 'fac-3', status: 'absent', time: '---' },
-  ];
+  useEffect(() => {
+    async function loadHistory() {
+      const res = await apiFetch('/api/student/attendance/history');
+      if (res.success && res.data) {
+        // Map different data formats (database rows vs fallback mocks)
+        const mapped = res.data.map((rec: any) => {
+          const dateStr = rec.session_date || (rec.session ? rec.session.date : '') || (rec.markedAt ? rec.markedAt.substring(0, 10) : rec.marked_at?.substring(0, 10) || '');
+          const timeStr = rec.marked_at 
+            ? new Date(rec.marked_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : (rec.markedAt 
+                ? new Date(rec.markedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : '---');
+          return {
+            id: rec.id,
+            date: dateStr,
+            subjectCode: rec.subject_code || (rec.subject ? rec.subject.code : 'SUBJ'),
+            subjectName: rec.subject_name || (rec.subject ? rec.subject.name : 'Unknown Subject'),
+            facultyName: rec.faculty_name || 'Faculty',
+            status: rec.status,
+            time: timeStr
+          };
+        });
+        setRecords(mapped);
+      }
+      setLoading(false);
+    }
+    loadHistory();
+  }, []);
 
-  const getSubjectCode = (subId: string) => {
-    return mockSubjects.find((s) => s.id === subId)?.code || 'SUB';
-  };
+  // Filter unique subjects dynamically from records for dropdown filter
+  const subjectsMap = new Map();
+  records.forEach(r => {
+    subjectsMap.set(r.subjectCode, r.subjectName);
+  });
+  const uniqueSubjects = Array.from(subjectsMap.entries()).map(([code, name]) => ({ code, name }));
 
-  const getSubjectName = (subId: string) => {
-    return mockSubjects.find((s) => s.id === subId)?.name || 'Unknown';
-  };
-
-  const getFacultyName = (facId: string) => {
-    const profile = mockFacultyProfiles.find((f) => f.id === facId);
-    if (!profile) return 'Faculty';
-    return mockUsers.find((u) => u.id === profile.userId)?.name || 'Faculty';
-  };
-
-  // Filter records
-  const filteredRecords = mockHistoryRecords.filter((rec) => {
-    const matchSub = subjectFilter === 'all' || rec.subjectId === subjectFilter;
+  // Filter records based on selected dropdown options
+  const filteredRecords = records.filter((rec) => {
+    const matchSub = subjectFilter === 'all' || rec.subjectCode === subjectFilter;
     const matchStatus = statusFilter === 'all' || rec.status === statusFilter;
     return matchSub && matchStatus;
   });
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center bg-gray-50/50 dark:bg-gray-950/30">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -75,7 +85,7 @@ export default function StudentAttendanceHistoryPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <History className="w-5 h-5 text-teal-650 dark:text-teal-400" />
+                <History className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 Lecture Attendance Ledger
               </CardTitle>
               <CardDescription>Audited list of class presence recordings.</CardDescription>
@@ -85,12 +95,12 @@ export default function StudentAttendanceHistoryPage() {
               <select
                 value={subjectFilter}
                 onChange={(e) => setSubjectFilter(e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 font-medium"
+                className="h-9 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 font-medium"
               >
                 <option value="all">All Subjects</option>
-                {mockSubjects.map((sub) => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.code}
+                {uniqueSubjects.map((sub) => (
+                  <option key={sub.code} value={sub.code}>
+                    {sub.code} - {sub.name}
                   </option>
                 ))}
               </select>
@@ -98,7 +108,7 @@ export default function StudentAttendanceHistoryPage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-9 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 font-medium"
+                className="h-9 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 font-medium"
               >
                 <option value="all">All Status</option>
                 <option value="present">Present</option>
@@ -135,13 +145,13 @@ export default function StudentAttendanceHistoryPage() {
                       {rec.date}
                     </TableCell>
                     <TableCell className="font-bold text-teal-600 dark:text-teal-400">
-                      {getSubjectCode(rec.subjectId)}
+                      {rec.subjectCode}
                     </TableCell>
                     <TableCell className="font-semibold text-gray-900 dark:text-gray-100">
-                      {getSubjectName(rec.subjectId)}
+                      {rec.subjectName}
                     </TableCell>
                     <TableCell className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                      {getFacultyName(rec.facultyId)}
+                      {rec.facultyName}
                     </TableCell>
                     <TableCell className="text-gray-500 text-xs font-mono">
                       {rec.time}

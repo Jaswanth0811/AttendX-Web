@@ -1,14 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { mockSettings } from '@/lib/mock-data';
-import { SystemSettings } from '@/types';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Save, ShieldAlert, Timer, RefreshCw } from 'lucide-react';
+import { Save, ShieldAlert, Timer, RefreshCw } from 'lucide-react';
+import { apiFetch } from '@/lib/api';
 
 // Reusable Numeric Input with Plus and Minus Buttons
 interface NumberInputWithControlsProps {
@@ -72,32 +71,64 @@ const NumberInputWithControls: React.FC<NumberInputWithControlsProps> = ({ min, 
 };
 
 export default function SettingsPage() {
-  const [settings, setSettings] = useState<SystemSettings>(mockSettings);
+  const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   // Form states
-  const [attendanceThreshold, setAttendanceThreshold] = useState(settings.attendanceThreshold);
-  const [codeExpirySeconds, setCodeExpirySeconds] = useState(settings.codeExpirySeconds || 30);
-  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(settings.sessionTimeoutMinutes);
-  const [allowLateMarking, setAllowLateMarking] = useState(settings.allowLateMarking);
-  const [lateThresholdMinutes, setLateThresholdMinutes] = useState(settings.lateThresholdMinutes || 15);
+  const [attendanceThreshold, setAttendanceThreshold] = useState(75);
+  const [codeExpirySeconds, setCodeExpirySeconds] = useState(30);
+  const [sessionTimeoutMinutes, setSessionTimeoutMinutes] = useState(120);
+  const [allowLateMarking, setAllowLateMarking] = useState(true);
+  const [lateThresholdMinutes, setLateThresholdMinutes] = useState(15);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function loadSettings() {
+      const res = await apiFetch('/api/admin/settings');
+      if (res.success && res.data) {
+        const s = res.data;
+        if (s.attendanceThreshold !== undefined) setAttendanceThreshold(s.attendanceThreshold);
+        if (s.codeExpirySeconds !== undefined) setCodeExpirySeconds(s.codeExpirySeconds);
+        if (s.sessionTimeoutMinutes !== undefined) setSessionTimeoutMinutes(s.sessionTimeoutMinutes);
+        if (s.allowLateMarking !== undefined) setAllowLateMarking(s.allowLateMarking);
+        if (s.lateThresholdMinutes !== undefined) setLateThresholdMinutes(s.lateThresholdMinutes);
+      }
+      setLoading(false);
+    }
+    loadSettings();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
 
-    setTimeout(() => {
-      setSettings({
-        attendanceThreshold,
-        codeExpirySeconds,
-        sessionTimeoutMinutes,
-        allowLateMarking,
-        lateThresholdMinutes,
-      });
-      setIsSaving(false);
+    const body = {
+      attendanceThreshold,
+      codeExpirySeconds,
+      sessionTimeoutMinutes,
+      allowLateMarking,
+      lateThresholdMinutes,
+    };
+
+    const res = await apiFetch('/api/admin/settings', {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    });
+
+    if (res.success) {
       alert('System configurations saved successfully!');
-    }, 800);
+    } else {
+      alert(res.message || 'Failed to save system configurations.');
+    }
+    setIsSaving(false);
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-3xl">
@@ -197,11 +228,11 @@ export default function SettingsPage() {
               </div>
 
               {allowLateMarking && (
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-dashed border-gray-200 dark:border-gray-855">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-4 border-t border-dashed border-gray-200 dark:border-gray-800">
                   <div className="space-y-1">
                     <Label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Late Grace Period Threshold (Minutes)</Label>
                     <p className="text-[11px] text-muted-foreground max-w-md">
-                      Minutes after start time during which student is marked &ldquo;late&rdquo;. Past this, submission is blocked.
+                      Grace period during which checked-in students are marked &ldquo;late&rdquo;. Past this, submissions are blocked.
                     </p>
                   </div>
                   <div className="shrink-0">
@@ -218,7 +249,7 @@ export default function SettingsPage() {
 
             {/* Save Buttons */}
             <div className="pt-4 flex justify-end">
-              <Button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white h-10 px-6 flex items-center gap-2">
+              <Button type="submit" disabled={isSaving} className="bg-indigo-650 hover:bg-indigo-700 text-white h-10 px-6 flex items-center gap-2">
                 <Save className="w-4.5 h-4.5" />
                 {isSaving ? 'Saving parameters...' : 'Save Configuration'}
               </Button>

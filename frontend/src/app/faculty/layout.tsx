@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   Users,
   LayoutDashboard,
-  QrCode,
+  ScanLine,
   History,
   Shuffle,
   BarChart3,
@@ -28,7 +28,7 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   { name: 'Dashboard', href: '/faculty', icon: LayoutDashboard },
-  { name: 'Start Attendance', href: '/faculty/attendance', icon: QrCode },
+  { name: 'Start Attendance', href: '/faculty/attendance', icon: ScanLine },
   { name: 'Attendance History', href: '/faculty/history', icon: History },
   { name: 'Substitution Request', href: '/faculty/substitutions', icon: Shuffle },
   { name: 'Reports', href: '/faculty/reports', icon: BarChart3 },

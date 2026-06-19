@@ -13,7 +13,7 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Users, Activity, QrCode, Play, ExternalLink } from 'lucide-react';
+import { Calendar, Users, Activity, ScanLine, Play, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FacultyDashboardPage() {
@@ -137,7 +137,7 @@ export default function FacultyDashboardPage() {
                     <TableCell className="pr-6 text-right">
                       <Link href={`/faculty/attendance?slot=${cls.id}`}>
                         <Button className="bg-purple-600 hover:bg-purple-700 text-white flex items-center gap-1.5 h-8">
-                          <QrCode className="w-4 h-4" />
+                          <ScanLine className="w-4 h-4" />
                           Start Attendance
                         </Button>
                       </Link>

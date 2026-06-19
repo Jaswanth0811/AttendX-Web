@@ -1,68 +1,117 @@
 'use client';
 
-import React, { useState } from 'react';
-import { mockSubstitutions, mockTimetable, mockFacultyProfiles, mockSubjects, mockUsers, mockSections } from '@/lib/mock-data';
-import { SubstitutionRequest, SubjectOption, DayOfWeek } from '@/types';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Shuffle, Calendar, Plus, User, Info } from 'lucide-react';
+import { Shuffle, Calendar, User, Info } from 'lucide-react';
+import { useAuth } from '@/store/auth-context';
+import { apiFetch } from '@/lib/api';
 
 export default function FacultySubstitutionsPage() {
-  const [substitutions, setSubstitutions] = useState<SubstitutionRequest[]>(
-    mockSubstitutions.filter((s) => s.requestingFacultyId === 'fac-1')
-  );
+  const { user } = useAuth();
+  
+  const [loading, setLoading] = useState(true);
+  const [substitutions, setSubstitutions] = useState<any[]>([]);
+  const [myClasses, setMyClasses] = useState<any[]>([]);
+  const [facultyList, setFacultyList] = useState<any[]>([]);
+  const [subjectsList, setSubjectsList] = useState<any[]>([]);
 
   // Form states
-  const [timetableEntryId, setTimetableEntryId] = useState(mockTimetable[0]?.id || '');
+  const [timetableEntryId, setTimetableEntryId] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-  const [substituteFacultyId, setSubstituteFacultyId] = useState(mockFacultyProfiles[1]?.id || '');
-  const [subjectOption, setSubjectOption] = useState<SubjectOption>('same_subject');
-  const [substituteSubjectId, setSubstituteSubjectId] = useState(mockSubjects[0]?.id || '');
+  const [substituteFacultyId, setSubstituteFacultyId] = useState('');
+  const [subjectOption, setSubjectOption] = useState<'same_subject' | 'different_subject'>('same_subject');
+  const [substituteSubjectId, setSubstituteSubjectId] = useState('');
   const [reason, setReason] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const myClasses = mockTimetable.filter((t) => t.facultyId === 'fac-1');
+  useEffect(() => {
+    async function loadData() {
+      // 1. Fetch cover request history
+      const historyRes = await apiFetch('/api/faculty/substitutions');
+      if (historyRes.success && historyRes.data) {
+        setSubstitutions(historyRes.data);
+      }
 
-  const getFacultyName = (facId: string) => {
-    const profile = mockFacultyProfiles.find((f) => f.id === facId);
-    if (!profile) return 'Unknown';
-    return mockUsers.find((u) => u.id === profile.userId)?.name || 'Unknown';
-  };
+      // 2. Fetch my timetable classes
+      const timetableRes = await apiFetch('/api/faculty/timetable');
+      if (timetableRes.success && timetableRes.data) {
+        setMyClasses(timetableRes.data);
+        if (timetableRes.data.length > 0) {
+          setTimetableEntryId(timetableRes.data[0].id);
+        }
+      }
 
-  const getSubjectCode = (subId: string) => {
-    return mockSubjects.find((s) => s.id === subId)?.code || 'SUB';
-  };
+      // 3. Fetch colleague faculty list
+      const facultyRes = await apiFetch('/api/faculty/faculty-list');
+      if (facultyRes.success && facultyRes.data) {
+        setFacultyList(facultyRes.data);
+        const firstColleague = facultyRes.data.find((f: any) => f.id !== user?.profileId);
+        if (firstColleague) {
+          setSubstituteFacultyId(firstColleague.id);
+        }
+      }
 
-  const getClassDetails = (timetableEntryId: string) => {
-    const entry = mockTimetable.find((t) => t.id === timetableEntryId);
-    if (!entry) return 'Class Unknown';
-    const sub = mockSubjects.find((s) => s.id === entry.subjectId);
-    const sec = mockSections.find((s) => s.id === entry.sectionId);
-    return `${sub ? sub.code : 'SUB'} - Section ${sec ? sec.name : 'Sec'} (${entry.day} ${entry.startTime})`;
-  };
+      // 4. Fetch subjects list
+      const subjectsRes = await apiFetch('/api/faculty/subjects');
+      if (subjectsRes.success && subjectsRes.data) {
+        setSubjectsList(subjectsRes.data);
+        if (subjectsRes.data.length > 0) {
+          setSubstituteSubjectId(subjectsRes.data[0].id);
+        }
+      }
 
-  const handleSubmit = (e: React.FormEvent) => {
+      setLoading(false);
+    }
+    loadData();
+  }, [user?.profileId]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!timetableEntryId || !substituteFacultyId || !date) {
+      alert('Please fill out all required cover request details.');
+      return;
+    }
 
-    const newRequest: SubstitutionRequest = {
-      id: `subst-${Date.now()}`,
-      requestingFacultyId: 'fac-1',
-      substituteFacultyId,
+    setSubmitting(true);
+    const body = {
       timetableEntryId,
       date,
-      reason,
+      substituteFacultyId,
       subjectOption,
       substituteSubjectId: subjectOption === 'different_subject' ? substituteSubjectId : undefined,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
+      reason
     };
 
-    setSubstitutions([newRequest, ...substitutions]);
-    setReason('');
-    alert('Substitution request submitted! Awaiting administrator approval.');
+    const res = await apiFetch('/api/faculty/substitutions', {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+
+    if (res.success && res.data) {
+      // Refresh Cover request list
+      const historyRes = await apiFetch('/api/faculty/substitutions');
+      if (historyRes.success && historyRes.data) {
+        setSubstitutions(historyRes.data);
+      }
+      setReason('');
+      alert('Substitution request submitted! Awaiting administrator approval.');
+    } else {
+      alert(res.message || 'Failed to submit cover request.');
+    }
+    setSubmitting(false);
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-650"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -77,7 +126,7 @@ export default function FacultySubstitutionsPage() {
         <Card className="border-0 shadow-sm dark:bg-gray-900/60 lg:col-span-1 h-fit">
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Shuffle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <Shuffle className="w-5 h-5 text-purple-650 dark:text-purple-400" />
               Request Substitution
             </CardTitle>
             <CardDescription>File a cover form for administrator auditing.</CardDescription>
@@ -87,18 +136,23 @@ export default function FacultySubstitutionsPage() {
               {/* Select Lecture */}
               <div className="space-y-2">
                 <Label htmlFor="class">Select Lecture Slot</Label>
-                <select
-                  id="class"
-                  value={timetableEntryId}
-                  onChange={(e) => setTimetableEntryId(e.target.value)}
-                  className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 font-medium"
-                >
-                  {myClasses.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {getClassDetails(c.id)}
-                    </option>
-                  ))}
-                </select>
+                {myClasses.length === 0 ? (
+                  <p className="text-xs text-red-500 py-1 font-semibold">You have no scheduled slots to request substitution for.</p>
+                ) : (
+                  <select
+                    id="class"
+                    value={timetableEntryId}
+                    onChange={(e) => setTimetableEntryId(e.target.value)}
+                    className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-3 text-sm outline-none focus-visible:border-ring font-medium"
+                    required
+                  >
+                    {myClasses.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.subjectCode} - {c.sectionName} ({c.day} {c.startTime.substring(0, 5)})
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {/* Date */}
@@ -121,13 +175,14 @@ export default function FacultySubstitutionsPage() {
                   id="substitute"
                   value={substituteFacultyId}
                   onChange={(e) => setSubstituteFacultyId(e.target.value)}
-                  className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-3 text-sm outline-none focus-visible:border-ring font-medium"
+                  required
                 >
-                  {mockFacultyProfiles
-                    .filter((f) => f.id !== 'fac-1')
+                  {facultyList
+                    .filter((f) => f.id !== user?.profileId)
                     .map((fac) => (
                       <option key={fac.id} value={fac.id}>
-                        {getFacultyName(fac.id)}
+                        {fac.name} ({fac.departmentName})
                       </option>
                     ))}
                 </select>
@@ -141,7 +196,7 @@ export default function FacultySubstitutionsPage() {
                     type="button"
                     variant={subjectOption === 'same_subject' ? 'default' : 'outline'}
                     onClick={() => setSubjectOption('same_subject')}
-                    className={subjectOption === 'same_subject' ? 'bg-purple-650 hover:bg-purple-750 text-white h-9' : 'border-gray-200 dark:border-gray-800 h-9'}
+                    className={subjectOption === 'same_subject' ? 'bg-purple-650 hover:bg-purple-700 text-white h-9 font-semibold' : 'border-gray-200 dark:border-gray-800 h-9 font-semibold'}
                   >
                     Same Course
                   </Button>
@@ -149,7 +204,7 @@ export default function FacultySubstitutionsPage() {
                     type="button"
                     variant={subjectOption === 'different_subject' ? 'default' : 'outline'}
                     onClick={() => setSubjectOption('different_subject')}
-                    className={subjectOption === 'different_subject' ? 'bg-purple-650 hover:bg-purple-750 text-white h-9' : 'border-gray-200 dark:border-gray-800 h-9'}
+                    className={subjectOption === 'different_subject' ? 'bg-purple-650 hover:bg-purple-700 text-white h-9 font-semibold' : 'border-gray-200 dark:border-gray-800 h-9 font-semibold'}
                   >
                     Different Course
                   </Button>
@@ -163,9 +218,10 @@ export default function FacultySubstitutionsPage() {
                     id="subject"
                     value={substituteSubjectId}
                     onChange={(e) => setSubstituteSubjectId(e.target.value)}
-                    className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                    className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-3 text-sm outline-none focus-visible:border-ring font-medium"
+                    required
                   >
-                    {mockSubjects.map((sub) => (
+                    {subjectsList.map((sub) => (
                       <option key={sub.id} value={sub.id}>
                         {sub.code} - {sub.name}
                       </option>
@@ -183,13 +239,17 @@ export default function FacultySubstitutionsPage() {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="Medical leave, external exam duty, etc."
-                  className="w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-transparent p-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 resize-none"
+                  className="w-full rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-3 text-sm outline-none focus-visible:border-ring resize-none font-medium"
                   required
                 />
               </div>
 
-              <Button type="submit" className="w-full bg-purple-650 hover:bg-purple-750 text-white h-10 font-bold">
-                Submit Cover Request
+              <Button 
+                type="submit" 
+                disabled={submitting || myClasses.length === 0}
+                className="w-full bg-purple-650 hover:bg-purple-700 text-white h-10 font-bold disabled:opacity-50"
+              >
+                {submitting ? 'Submitting...' : 'Submit Cover Request'}
               </Button>
             </form>
           </CardContent>
@@ -212,6 +272,8 @@ export default function FacultySubstitutionsPage() {
                 const isApproved = sub.status === 'approved';
                 const isRejected = sub.status === 'rejected';
 
+                const formattedCoverDate = new Date(sub.date).toLocaleDateString([], { dateStyle: 'medium' });
+
                 return (
                   <div
                     key={sub.id}
@@ -220,34 +282,39 @@ export default function FacultySubstitutionsPage() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                        <span className="text-xs font-semibold text-gray-500">Scheduled: {sub.date}</span>
+                        <span className="text-xs font-semibold text-gray-500">Scheduled: {formattedCoverDate}</span>
                         <Badge
                           className={
                             isApproved
-                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-400'
+                              ? 'bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-50 dark:bg-emerald-950/20 dark:border-emerald-900/30 dark:text-emerald-400 font-bold text-[10px]'
                               : isRejected
-                              ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-50 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400'
-                              : 'bg-amber-50 text-amber-600 border border-amber-100 hover:bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-400'
+                              ? 'bg-red-50 text-red-600 border border-red-100 hover:bg-red-50 dark:bg-red-950/20 dark:border-red-900/30 dark:text-red-400 font-bold text-[10px]'
+                              : 'bg-amber-50 text-amber-600 border border-amber-100 hover:bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900/30 dark:text-amber-400 font-bold text-[10px]'
                           }
                         >
                           {sub.status}
                         </Badge>
                       </div>
                       <p className="text-sm font-bold text-gray-950 dark:text-gray-100">
-                        {getClassDetails(sub.timetableEntryId)}
+                        {sub.subjectCode} - Section {sub.sectionName}
                       </p>
-                      <p className="text-xs text-gray-650 dark:text-gray-400 flex items-center gap-1.5 font-medium">
-                        <User className="w-3.5 h-3.5 text-gray-400" /> Substitute: {getFacultyName(sub.substituteFacultyId)}
+                      <p className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1.5 font-medium">
+                        <User className="w-3.5 h-3.5 text-gray-400" /> 
+                        {sub.requestingFacultyId === user?.profileId ? (
+                          <>Substitute: {sub.substituteFacultyName}</>
+                        ) : (
+                          <>Substitute For: {sub.requestingFacultyName}</>
+                        )}
                         {sub.subjectOption === 'different_subject' && (
                           <span className="text-[10px] bg-purple-50 text-purple-700 px-1.5 py-0.5 rounded font-bold dark:bg-purple-950/20 dark:text-purple-400">
-                            Covering: {getSubjectCode(sub.substituteSubjectId!)}
+                            Covering: {sub.substituteSubjectCode}
                           </span>
                         )}
                       </p>
                     </div>
 
                     <div className="text-right sm:max-w-xs">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold block mb-1">Absence Reason</span>
+                      <span className="text-[10px] text-gray-400 uppercase font-bold block mb-1">Cover Reason</span>
                       <p className="text-xs text-gray-600 dark:text-gray-400 italic leading-relaxed">
                         &ldquo;{sub.reason || 'No description'}&rdquo;
                       </p>

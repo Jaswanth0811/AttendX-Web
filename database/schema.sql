@@ -292,5 +292,5 @@ INSERT INTO system_settings (key, value, description) VALUES
 ('late_threshold_minutes', '15', 'Minutes after which attendance is marked late');
 
 -- Default admin user (password: admin123)
-INSERT INTO users (email, password_hash, role, first_name, last_name) VALUES
-('admin@attendx.edu', '$2b$10$rOzK8YjGwBqNqX3J9X5NOeZG5GmGxU5BqTfNkLFnOFzJzMZ5K1kWe', 'admin', 'System', 'Administrator');
+INSERT INTO users (id, email, password_hash, role, first_name, last_name) VALUES
+('89bbc404-fa9e-4c59-8b7c-137b4d2fa8fd', 'admin@attendx.edu', '$2b$10$rOzK8YjGwBqNqX3J9X5NOeZG5GmGxU5BqTfNkLFnOFzJzMZ5K1kWe', 'admin', 'System', 'Administrator');

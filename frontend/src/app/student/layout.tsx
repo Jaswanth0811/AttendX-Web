@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import {
   GraduationCap,
   LayoutDashboard,
-  QrCode,
+  ScanLine,
   History,
   BookOpen,
   AlertTriangle,
@@ -17,7 +17,8 @@ import {
   Menu,
   Bell,
   Sun,
-  Moon
+  Moon,
+  Calendar
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -28,7 +29,8 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   { name: 'Dashboard', href: '/student', icon: LayoutDashboard },
-  { name: 'Scan QR', href: '/student/scan', icon: QrCode },
+  { name: 'Scan QR', href: '/student/scan', icon: ScanLine },
+  { name: 'Class Timetable', href: '/student/timetable', icon: Calendar },
   { name: 'Attendance History', href: '/student/attendance', icon: History },
   { name: 'Subject Attendance', href: '/student/subjects', icon: BookOpen },
   { name: 'Alerts', href: '/student/alerts', icon: AlertTriangle },
@@ -71,11 +73,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 text-gray-700 dark:text-gray-300">
       {/* Brand Logo */}
       <div className="h-16 flex items-center gap-2.5 px-6 border-b border-gray-100 dark:border-gray-800">
-        <div className="bg-gradient-to-tr from-teal-550 to-emerald-600 p-2 rounded-lg text-white">
+        <div className="bg-gradient-to-tr from-teal-500 to-emerald-600 p-2 rounded-lg text-white">
           <GraduationCap className="w-5 h-5" />
         </div>
         {!isCollapsed && (
-          <span className="font-bold text-lg bg-gradient-to-r from-teal-650 to-emerald-600 bg-clip-text text-transparent dark:from-teal-400 dark:to-emerald-400">
+          <span className="font-bold text-lg bg-gradient-to-r from-teal-600 to-emerald-600 bg-clip-text text-transparent dark:from-teal-400 dark:to-emerald-400">
             AttendX Student
           </span>
         )}
@@ -182,7 +184,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
             {/* Profile Avatar */}
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-teal-105 dark:bg-teal-950/60 flex items-center justify-center text-teal-650 dark:text-teal-400 font-bold text-sm">
+              <div className="w-8 h-8 rounded-full bg-teal-50 dark:bg-teal-950/60 flex items-center justify-center text-teal-600 dark:text-teal-400 font-bold text-sm">
                 RH
               </div>
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300 hidden sm:block">Student Portal</span>

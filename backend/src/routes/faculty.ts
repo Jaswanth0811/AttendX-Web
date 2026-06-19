@@ -32,17 +32,28 @@ router.get('/dashboard', async (req: AuthenticatedRequest, res: Response): Promi
 
     if (isFallback()) {
       const todaysClasses = store.timetable.filter(t => t.facultyId === facultyId && t.day === currentDayName);
+      const mappedClasses = todaysClasses.map(cls => {
+        const sub = store.subjects.find(s => s.id === cls.subjectId);
+        const sec = store.sections.find(s => s.id === cls.sectionId);
+        return {
+          ...cls,
+          subjectCode: sub?.code || 'SUBJ',
+          subjectName: sub?.name || 'Unknown Subject',
+          sectionName: sec?.name || 'A'
+        };
+      });
+
       const recentSessions = store.attendanceSessions.filter(s => s.facultyId === facultyId);
       const stats = {
         totalSessions: recentSessions.length,
         avgAttendance: 85,
-        classesToday: todaysClasses.length
+        classesToday: mappedClasses.length
       };
 
       res.json({
         success: true,
         data: {
-          todaysClasses,
+          todaysClasses: mappedClasses,
           recentSessions,
           substituteClasses: [],
           stats
@@ -51,7 +62,23 @@ router.get('/dashboard', async (req: AuthenticatedRequest, res: Response): Promi
     } else {
       // DB Queries
       const classesRes = await query(
-        'SELECT * FROM timetable_entries WHERE faculty_id = $1 AND day = $2 AND is_active = true',
+        `SELECT 
+           te.id,
+           te.day,
+           te.start_time::text as "startTime",
+           te.end_time::text as "endTime",
+           te.room,
+           te.faculty_id as "facultyId",
+           te.subject_id as "subjectId",
+           te.section_id as "sectionId",
+           te.is_active as "isActive",
+           s.code as "subjectCode",
+           s.name as "subjectName",
+           sec.name as "sectionName"
+         FROM timetable_entries te
+         JOIN subjects s ON te.subject_id = s.id
+         JOIN sections sec ON te.section_id = sec.id
+         WHERE te.faculty_id = $1 AND te.day = $2 AND te.is_active = true`,
         [facultyId, currentDayName]
       );
       const sessionsRes = await query(
@@ -76,6 +103,65 @@ router.get('/dashboard', async (req: AuthenticatedRequest, res: Response): Promi
           }
         }
       });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get faculty full timetable
+router.get('/timetable', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const facultyId = req.user?.profileId;
+  if (!facultyId) {
+    res.status(400).json({ success: false, message: 'Faculty profile not found' });
+    return;
+  }
+  try {
+    if (isFallback()) {
+      const list = store.timetable.filter(t => t.facultyId === facultyId && t.isActive);
+      const mapped = list.map(cls => {
+        const sub = store.subjects.find(s => s.id === cls.subjectId);
+        const sec = store.sections.find(s => s.id === cls.sectionId);
+        return {
+          id: cls.id,
+          day: cls.day,
+          startTime: cls.startTime,
+          endTime: cls.endTime,
+          room: cls.room,
+          subjectCode: sub?.code || 'SUBJ',
+          subjectName: sub?.name || 'Unknown',
+          sectionName: sec?.name || 'A'
+        };
+      });
+      res.json({ success: true, data: mapped });
+    } else {
+      const result = await query(
+        `SELECT 
+           te.id,
+           te.day,
+           te.start_time::text as "startTime",
+           te.end_time::text as "endTime",
+           te.room,
+           s.code as "subjectCode",
+           s.name as "subjectName",
+           sec.name as "sectionName"
+         FROM timetable_entries te
+         JOIN subjects s ON te.subject_id = s.id
+         JOIN sections sec ON te.section_id = sec.id
+         WHERE te.faculty_id = $1 AND te.is_active = true
+         ORDER BY 
+           CASE te.day
+             WHEN 'monday' THEN 1
+             WHEN 'tuesday' THEN 2
+             WHEN 'wednesday' THEN 3
+             WHEN 'thursday' THEN 4
+             WHEN 'friday' THEN 5
+             WHEN 'saturday' THEN 6
+           END,
+           te.start_time`,
+        [facultyId]
+      );
+      res.json({ success: true, data: result.rows });
     }
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
@@ -217,10 +303,64 @@ router.post(['/sessions/:id/qr', '/sessions/:id/code'], async (req: Request, res
   }
 });
 
+// Get Session Attendance checked-in students
+router.get('/sessions/:id/attendance', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  try {
+    if (isFallback()) {
+      const records = store.attendanceRecords.filter(r => r.sessionId === id);
+      const mapped = records.map(r => {
+        const profile = store.studentProfiles.find(p => p.id === r.studentId);
+        const user = profile ? store.users.find(u => u.id === profile.userId) : null;
+        const timeStr = r.markedAt 
+          ? new Date(r.markedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) 
+          : '';
+        return {
+          rollNumber: profile?.rollNumber || 'UNKNOWN',
+          name: user ? `${user.firstName} ${user.lastName}` : 'Unknown Student',
+          time: timeStr,
+          status: r.status as 'present' | 'late'
+        };
+      });
+      res.json({ success: true, data: mapped });
+    } else {
+      const result = await query(
+        `SELECT 
+           sp.roll_number as "rollNumber",
+           u.first_name || ' ' || u.last_name as "name",
+           ar.marked_at as "markedAt",
+           ar.status
+         FROM attendance_records ar
+         JOIN student_profiles sp ON ar.student_id = sp.id
+         JOIN users u ON sp.user_id = u.id
+         WHERE ar.session_id = $1
+         ORDER BY ar.marked_at DESC`,
+        [id]
+      );
+      const mapped = result.rows.map(row => {
+        const timeStr = row.markedAt 
+          ? new Date(row.markedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }) 
+          : '';
+        return {
+          rollNumber: row.rollNumber,
+          name: row.name,
+          time: timeStr,
+          status: row.status
+        };
+      });
+      res.json({ success: true, data: mapped });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // End Session / Finalize
 router.patch('/sessions/:id', async (req: Request, res: Response): Promise<void> => {
   const { id } = req.params;
-  const { status } = req.body; // usually 'completed' or 'cancelled'
+  const { status } = req.body; // 'completed' or 'cancelled'
+  const finalStatus = status || 'completed';
+
   try {
     const now = new Date().toISOString();
     if (isFallback()) {
@@ -229,18 +369,67 @@ router.patch('/sessions/:id', async (req: Request, res: Response): Promise<void>
         res.status(404).json({ success: false, message: 'Session not found' });
         return;
       }
-      store.attendanceSessions[idx].status = status || 'completed';
-      store.attendanceSessions[idx].endedAt = now;
-      res.json({ success: true, data: store.attendanceSessions[idx] });
+      
+      const session = store.attendanceSessions[idx];
+      session.status = finalStatus as any;
+      session.endedAt = now;
+
+      // If completed, mark all other section students as absent
+      if (finalStatus === 'completed') {
+        const sectionStudents = store.studentProfiles.filter(sp => sp.sectionId === session.sectionId);
+        sectionStudents.forEach(student => {
+          const hasRecord = store.attendanceRecords.some(r => r.sessionId === id && r.studentId === student.id);
+          if (!hasRecord) {
+            store.attendanceRecords.push({
+              id: uuidv4(),
+              sessionId: id,
+              studentId: student.id,
+              status: 'absent',
+              markedAt: now,
+              markedBy: 'system'
+            });
+          }
+        });
+      }
+
+      res.json({ success: true, data: session });
     } else {
-      const result = await query(
-        'UPDATE attendance_sessions SET status = $1, ended_at = $2 WHERE id = $3 RETURNING *',
-        [status || 'completed', now, id]
-      );
-      if (result.rows.length === 0) {
+      // Get session section details first
+      const sessionRes = await query('SELECT section_id FROM attendance_sessions WHERE id = $1', [id]);
+      if (sessionRes.rows.length === 0) {
         res.status(404).json({ success: false, message: 'Session not found' });
         return;
       }
+      const sectionId = sessionRes.rows[0].section_id;
+
+      // Update session status
+      const result = await query(
+        'UPDATE attendance_sessions SET status = $1, ended_at = $2 WHERE id = $3 RETURNING *',
+        [finalStatus, now, id]
+      );
+
+      // If completed, record absent history for the rest of the students
+      if (finalStatus === 'completed') {
+        await query(
+          `INSERT INTO attendance_records (id, session_id, student_id, status, marked_at, marked_by)
+           SELECT 
+             uuid_generate_v4(), 
+             $1, 
+             sp.id, 
+             'absent', 
+             NOW(), 
+             'system'
+           FROM student_profiles sp
+           WHERE sp.section_id = $2
+             AND sp.id NOT IN (
+               SELECT student_id 
+               FROM attendance_records 
+               WHERE session_id = $1
+             )`,
+          [id, sectionId]
+        );
+      }
+
       res.json({ success: true, data: result.rows[0] });
     }
   } catch (error: any) {
@@ -292,6 +481,55 @@ router.post('/substitutions', async (req: AuthenticatedRequest, res: Response): 
   }
 });
 
+// Get list of other faculty members
+router.get('/faculty-list', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (isFallback()) {
+      const list = store.facultyProfiles.map(fp => {
+        const u = store.users.find(user => user.id === fp.userId);
+        const dept = store.departments.find(d => d.id === fp.departmentId);
+        return {
+          id: fp.id,
+          facultyCode: fp.facultyCode,
+          name: u ? `${u.firstName} ${u.lastName}` : 'Unknown',
+          departmentName: dept?.name || 'Unknown'
+        };
+      });
+      res.json({ success: true, data: list });
+    } else {
+      const result = await query(
+        `SELECT 
+           fp.id, 
+           fp.faculty_code as "facultyCode", 
+           u.first_name || ' ' || u.last_name as "name",
+           d.name as "departmentName"
+         FROM faculty_profiles fp
+         JOIN users u ON fp.user_id = u.id
+         JOIN departments d ON fp.department_id = d.id
+         WHERE u.is_active = true
+         ORDER BY name`
+      );
+      res.json({ success: true, data: result.rows });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Get list of subjects
+router.get('/subjects', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (isFallback()) {
+      res.json({ success: true, data: store.subjects });
+    } else {
+      const result = await query('SELECT id, code, name FROM subjects WHERE is_active = true ORDER BY code');
+      res.json({ success: true, data: result.rows });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Get Faculty requests history
 router.get('/substitutions', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const facultyId = req.user?.profileId;
@@ -302,10 +540,65 @@ router.get('/substitutions', async (req: AuthenticatedRequest, res: Response): P
   try {
     if (isFallback()) {
       const list = store.substitutionRequests.filter(s => s.requestingFacultyId === facultyId || s.substituteFacultyId === facultyId);
-      res.json({ success: true, data: list });
+      const mapped = list.map(sr => {
+        const reqFac = store.facultyProfiles.find(f => f.id === sr.requestingFacultyId);
+        const reqUser = reqFac ? store.users.find(u => u.id === reqFac.userId) : null;
+        const subFac = store.facultyProfiles.find(f => f.id === sr.substituteFacultyId);
+        const subUser = subFac ? store.users.find(u => u.id === subFac.userId) : null;
+        
+        const te = store.timetable.find(t => t.id === sr.timetableEntryId);
+        const sub = te ? store.subjects.find(s => s.id === te.subjectId) : null;
+        const sec = te ? store.sections.find(s => s.id === te.sectionId) : null;
+        const ss = sr.substituteSubjectId ? store.subjects.find(s => s.id === sr.substituteSubjectId) : null;
+        
+        return {
+          id: sr.id,
+          requestingFacultyId: sr.requestingFacultyId,
+          requestingFacultyName: reqUser ? `${reqUser.firstName} ${reqUser.lastName}` : 'Unknown',
+          substituteFacultyId: sr.substituteFacultyId,
+          substituteFacultyName: subUser ? `${subUser.firstName} ${subUser.lastName}` : 'Unknown',
+          timetableEntryId: sr.timetableEntryId,
+          date: sr.date,
+          reason: sr.reason,
+          subjectOption: sr.subjectOption,
+          substituteSubjectId: sr.substituteSubjectId,
+          status: sr.status,
+          createdAt: sr.createdAt,
+          subjectCode: sub?.code || 'SUBJ',
+          subjectName: sub?.name || 'Unknown',
+          sectionName: sec?.name || 'A',
+          substituteSubjectCode: ss?.code || '',
+          substituteSubjectName: ss?.name || ''
+        };
+      });
+      res.json({ success: true, data: mapped });
     } else {
       const result = await query(
-        'SELECT * FROM substitution_requests WHERE requesting_faculty_id = $1 OR substitute_faculty_id = $1 ORDER BY created_at DESC',
+        `SELECT 
+           sr.id,
+           sr.requesting_faculty_id as "requestingFacultyId",
+           (SELECT u.first_name || ' ' || u.last_name FROM faculty_profiles fp JOIN users u ON fp.user_id = u.id WHERE fp.id = sr.requesting_faculty_id) as "requestingFacultyName",
+           sr.substitute_faculty_id as "substituteFacultyId",
+           (SELECT u.first_name || ' ' || u.last_name FROM faculty_profiles fp JOIN users u ON fp.user_id = u.id WHERE fp.id = sr.substitute_faculty_id) as "substituteFacultyName",
+           sr.timetable_entry_id as "timetableEntryId",
+           sr.date::text as "date",
+           sr.reason,
+           sr.subject_option as "subjectOption",
+           sr.substitute_subject_id as "substituteSubjectId",
+           sr.status,
+           sr.created_at as "createdAt",
+           s.code as "subjectCode",
+           s.name as "subjectName",
+           sec.name as "sectionName",
+           ss.code as "substituteSubjectCode",
+           ss.name as "substituteSubjectName"
+         FROM substitution_requests sr
+         LEFT JOIN timetable_entries te ON sr.timetable_entry_id = te.id
+         LEFT JOIN subjects s ON te.subject_id = s.id
+         LEFT JOIN sections sec ON te.section_id = sec.id
+         LEFT JOIN subjects ss ON sr.substitute_subject_id = ss.id
+         WHERE sr.requesting_faculty_id = $1 OR sr.substitute_faculty_id = $1
+         ORDER BY sr.created_at DESC`,
         [facultyId]
       );
       res.json({ success: true, data: result.rows });

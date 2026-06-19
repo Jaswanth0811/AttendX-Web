@@ -14,8 +14,8 @@ import { Shield, Loader2, Eye, EyeOff, Info } from 'lucide-react';
 export default function AdminLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('Jaswanthganta2005@outlook.com');
+  const [password, setPassword] = useState('Gsiri2310#');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);

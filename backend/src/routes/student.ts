@@ -16,6 +16,37 @@ const requireStudent = (req: AuthenticatedRequest, res: Response, next: any) => 
 };
 
 router.use(authenticateToken);
+
+// Timetable metadata is accessible to any authenticated user (admin, faculty, or student)
+router.get('/timetable/metadata', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  try {
+    if (isFallback()) {
+      res.json({
+        success: true,
+        data: {
+          departments: store.departments,
+          semesters: store.semesters,
+          sections: store.sections
+        }
+      });
+    } else {
+      const depts = await query('SELECT id, name, code FROM departments WHERE is_active = true ORDER BY name');
+      const sems = await query('SELECT id, name, number FROM semesters ORDER BY number');
+      const secs = await query('SELECT id, name, department_id, semester_id FROM sections WHERE is_active = true ORDER BY name');
+      res.json({
+        success: true,
+        data: {
+          departments: depts.rows,
+          semesters: sems.rows,
+          sections: secs.rows
+        }
+      });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 router.use(requireStudent);
 
 // ---- 1. Student Dashboard ----
@@ -402,34 +433,6 @@ router.get('/attendance/history', async (req: AuthenticatedRequest, res: Respons
 });
 
 // ---- 4. Student Timetable ----
-router.get('/timetable/metadata', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
-  try {
-    if (isFallback()) {
-      res.json({
-        success: true,
-        data: {
-          departments: store.departments,
-          semesters: store.semesters,
-          sections: store.sections
-        }
-      });
-    } else {
-      const depts = await query('SELECT id, name, code FROM departments WHERE is_active = true ORDER BY name');
-      const sems = await query('SELECT id, name, number FROM semesters ORDER BY number');
-      const secs = await query('SELECT id, name, department_id, semester_id FROM sections WHERE is_active = true ORDER BY name');
-      res.json({
-        success: true,
-        data: {
-          departments: depts.rows,
-          semesters: sems.rows,
-          sections: secs.rows
-        }
-      });
-    }
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
-  }
-});
 
 router.get('/timetable', async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const studentId = req.user?.profileId;

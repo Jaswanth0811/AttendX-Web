@@ -201,7 +201,7 @@ export default function ReportsPage() {
                 <Button
                   onClick={() => handleGenerate(report.id)}
                   disabled={!!isGenerating}
-                  className="bg-indigo-650 hover:bg-indigo-700 text-white h-9 flex items-center gap-2 font-semibold"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 flex items-center gap-2 font-semibold"
                 >
                   {loading ? (
                     <>
@@ -223,3 +223,4 @@ export default function ReportsPage() {
     </div>
   );
 }
+

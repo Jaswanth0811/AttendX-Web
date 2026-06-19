@@ -62,7 +62,7 @@ export default function StudentQRScannerPage() {
       {/* Title */}
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center justify-center gap-2">
-          <ScanLine className="w-6 h-6 text-teal-650 dark:text-teal-400" />
+          <ScanLine className="w-6 h-6 text-teal-600 dark:text-teal-400" />
           Mark Attendance
         </h1>
         <p className="text-sm text-muted-foreground mt-0.5">Enter the active 6-digit attendance code shown by your lecturer.</p>
@@ -74,7 +74,7 @@ export default function StudentQRScannerPage() {
           <CardContent className="pt-8 pb-8 space-y-6">
             <form onSubmit={handleManualSubmit} className="space-y-6">
               <div className="flex flex-col items-center space-y-4">
-                <div className="w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/40 text-teal-650 dark:text-teal-400 flex items-center justify-center shadow-inner">
+                <div className="w-16 h-16 rounded-2xl bg-teal-50 dark:bg-teal-950/40 text-teal-600 dark:text-teal-400 flex items-center justify-center shadow-inner">
                   <Hash className="w-8 h-8" />
                 </div>
                 <div className="text-center space-y-1">
@@ -96,7 +96,7 @@ export default function StudentQRScannerPage() {
 
               <Button 
                 type="submit" 
-                className="w-full bg-teal-650 hover:bg-teal-700 text-white h-12 flex items-center justify-center gap-2 text-sm font-bold shadow-lg shadow-teal-500/20"
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white h-12 flex items-center justify-center gap-2 text-sm font-bold shadow-lg shadow-teal-500/20"
               >
                 Submit Attendance Code
               </Button>
@@ -107,7 +107,7 @@ export default function StudentQRScannerPage() {
         {scanStatus === 'submitting' && (
           <CardContent className="pt-12 pb-12 text-center space-y-4 flex flex-col items-center">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full border-4 border-teal-200 border-t-teal-650 animate-spin" />
+              <div className="w-16 h-16 rounded-full border-4 border-teal-200 border-t-teal-600 animate-spin" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <Hash className="w-5 h-5 text-teal-600" />
               </div>
@@ -148,7 +148,7 @@ export default function StudentQRScannerPage() {
               </div>
             </div>
 
-            <Button onClick={() => { setScanStatus('idle'); setManualCode(''); }} className="bg-teal-650 hover:bg-teal-700 text-white h-10 w-full max-w-sm">
+            <Button onClick={() => { setScanStatus('idle'); setManualCode(''); }} className="bg-teal-600 hover:bg-teal-700 text-white h-10 w-full max-w-sm">
               Mark Another Code
             </Button>
           </CardContent>
@@ -156,7 +156,7 @@ export default function StudentQRScannerPage() {
 
         {scanStatus === 'error' && (
           <CardContent className="pt-8 pb-8 text-center space-y-4 flex flex-col items-center">
-            <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 flex items-center justify-center">
               <AlertCircle className="w-8 h-8" />
             </div>
             <div className="space-y-1 max-w-sm">
@@ -172,3 +172,4 @@ export default function StudentQRScannerPage() {
     </div>
   );
 }
+

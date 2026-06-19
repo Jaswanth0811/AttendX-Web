@@ -70,11 +70,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await new Promise(resolve => setTimeout(resolve, 800));
 
     // Find matching user by email and role (mock auth)
-    const user = mockUsers.find(u => u.email === email && u.role === role);
+    const user = mockUsers.find(u => u.email.toLowerCase().trim() === email.toLowerCase().trim() && u.role === role);
 
     // Check against mock credentials or accept any password in dev
     const validCred = Object.values(MOCK_CREDENTIALS).find(
-      c => c.email === email && c.role === role
+      c => c.email.toLowerCase().trim() === email.toLowerCase().trim() && c.role === role
     );
 
     if (!user || (validCred && validCred.password !== password)) {

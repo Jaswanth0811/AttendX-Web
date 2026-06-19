@@ -67,7 +67,7 @@ export default function StudentSubjectsPage() {
         {dashboard.subjectWise.map((sub, idx) => (
           <Card key={idx} className="border-0 shadow-sm dark:bg-gray-900/60 overflow-hidden flex flex-col justify-between">
             <CardHeader className="pb-3 bg-teal-50/10 dark:bg-teal-950/5 border-b border-gray-50 dark:border-gray-850 flex flex-row items-center justify-between">
-              <span className="font-mono text-xs font-bold text-teal-650 dark:text-teal-400">{sub.subject.code}</span>
+              <span className="font-mono text-xs font-bold text-teal-600 dark:text-teal-400">{sub.subject.code}</span>
               {getStatusBadge(sub.percentage)}
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
@@ -124,3 +124,4 @@ export default function StudentSubjectsPage() {
     </div>
   );
 }
+

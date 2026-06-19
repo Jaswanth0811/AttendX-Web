@@ -29,7 +29,7 @@ export default function StudentDashboardPage() {
 
   const getAttendanceColor = (pct: number) => {
     if (pct >= 90) return 'text-emerald-600 dark:text-emerald-450';
-    if (pct >= 75) return 'text-indigo-650 dark:text-indigo-400';
+    if (pct >= 75) return 'text-indigo-600 dark:text-indigo-400';
     if (pct >= 60) return 'text-amber-600 dark:text-amber-400';
     return 'text-red-600 dark:text-red-400';
   };
@@ -66,12 +66,12 @@ export default function StudentDashboardPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-2xl bg-gradient-to-r from-teal-500/10 to-emerald-500/10 border border-teal-500/20 dark:from-teal-950/20 dark:to-emerald-950/20">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Hey {user?.name || 'Student'},</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Ready to mark attendance? Point your camera at the screen QR code.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Ready to mark attendance? Enter the active class attendance code.</p>
         </div>
         <Link href="/student/scan">
           <Button className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-10 px-6 flex items-center gap-2 shadow-lg shadow-teal-500/20">
             <ScanLine className="w-5 h-5" />
-            Scan QR Code
+            Enter Code
           </Button>
         </Link>
       </div>
@@ -98,7 +98,7 @@ export default function StudentDashboardPage() {
               <div className={`flex items-center gap-2 text-xs font-semibold px-3 py-1 rounded-full ${
                 overallAttendance >= 75 
                   ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400' 
-                  : 'text-red-650 bg-red-50 dark:bg-red-950/20 dark:text-red-400'
+                  : 'text-red-600 bg-red-50 dark:bg-red-950/20 dark:text-red-400'
               }`}>
                 <CheckCircle2 className="w-4 h-4" />
                 {overallAttendance >= 75 ? 'Above Threshold (75%)' : 'Below Threshold (75%)'}
@@ -205,3 +205,4 @@ export default function StudentDashboardPage() {
     </div>
   );
 }
+

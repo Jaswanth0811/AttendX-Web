@@ -22,7 +22,8 @@ import {
   Bell,
   Sun,
   Moon,
-  UserCheck
+  UserCheck,
+  TrendingUp
 } from 'lucide-react';
 
 interface SidebarItem {
@@ -37,6 +38,7 @@ const sidebarItems: SidebarItem[] = [
   { name: 'Subjects', href: '/admin/subjects', icon: BookOpen },
   { name: 'Faculty', href: '/admin/faculty', icon: Users },
   { name: 'Students', href: '/admin/students', icon: GraduationCap },
+  { name: 'Batch Promotion', href: '/admin/promotions', icon: TrendingUp },
   { name: 'Assignments', href: '/admin/assignments', icon: UserCheck },
   { name: 'Timetable', href: '/admin/timetable', icon: Calendar },
   { name: 'Substitutions', href: '/admin/substitutions', icon: Shuffle },

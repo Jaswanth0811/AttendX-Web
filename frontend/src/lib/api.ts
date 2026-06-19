@@ -54,11 +54,27 @@ export async function apiFetch<T = any>(
   try {
     const res = await fetch(url, mergedOptions);
     
+    const contentType = res.headers.get('content-type');
+    let json: any = null;
+    if (contentType && contentType.includes('application/json')) {
+      try {
+        json = await res.json();
+      } catch (err) {
+        // Ignore parse error
+      }
+    }
+
     // Handle unauthorized/session expiry
     if (res.status === 401 || res.status === 403) {
-      if (typeof window !== 'undefined') {
+      const isTokenError = json && (
+        json.message?.toLowerCase().includes('token') ||
+        json.message?.toLowerCase().includes('auth') ||
+        json.message?.toLowerCase().includes('credential') ||
+        json.message?.toLowerCase().includes('unauthorized')
+      );
+      
+      if (isTokenError && typeof window !== 'undefined') {
         localStorage.removeItem('attendx_auth');
-        // Force redirect to login page if unauthorized
         const pathname = window.location.pathname;
         if (!pathname.endsWith('/login') && pathname !== '/') {
           window.location.href = '/';
@@ -66,8 +82,18 @@ export async function apiFetch<T = any>(
       }
     }
 
-    const json = await res.json();
-    return json;
+    if (json !== null) {
+      return json;
+    }
+
+    if (res.ok) {
+      return { success: true };
+    }
+
+    return {
+      success: false,
+      message: `Request failed with status ${res.status}: ${res.statusText}`
+    };
   } catch (err: any) {
     console.error(`API Fetch Error [${url}]:`, err.message);
     return {

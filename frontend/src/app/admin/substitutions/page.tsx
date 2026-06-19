@@ -60,7 +60,7 @@ export default function SubstitutionsPage() {
   if (loading && substitutions.length === 0) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-650"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
@@ -161,7 +161,7 @@ export default function SubstitutionsPage() {
                 {/* Actions Footer */}
                 {isPending && (
                   <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/10 flex gap-2 justify-end">
-                    <Button variant="outline" size="sm" onClick={() => handleReject(sub.id)} className="text-red-650 hover:text-red-700 dark:hover:bg-red-950/20 border-red-200 hover:bg-red-50 h-9 font-semibold">
+                    <Button variant="outline" size="sm" onClick={() => handleReject(sub.id)} className="text-red-600 hover:text-red-700 dark:hover:bg-red-950/20 border-red-200 hover:bg-red-50 h-9 font-semibold">
                       <X className="w-4 h-4 mr-1.5" /> Reject Request
                     </Button>
                     <Button size="sm" onClick={() => handleApprove(sub.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 font-semibold">
@@ -177,3 +177,4 @@ export default function SubstitutionsPage() {
     </div>
   );
 }
+

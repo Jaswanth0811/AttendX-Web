@@ -29,7 +29,7 @@ interface SidebarItem {
 
 const sidebarItems: SidebarItem[] = [
   { name: 'Dashboard', href: '/student', icon: LayoutDashboard },
-  { name: 'Scan QR', href: '/student/scan', icon: ScanLine },
+  { name: 'Enter Code', href: '/student/scan', icon: ScanLine },
   { name: 'Class Timetable', href: '/student/timetable', icon: Calendar },
   { name: 'Attendance History', href: '/student/attendance', icon: History },
   { name: 'Subject Attendance', href: '/student/subjects', icon: BookOpen },

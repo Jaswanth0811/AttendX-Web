@@ -52,7 +52,7 @@ export default function FacultyHistoryPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <History className="w-5 h-5 text-purple-650 dark:text-purple-400" />
+                <History className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 Past Attendance Sessions
               </CardTitle>
               <CardDescription>View, audit, and correct student attendance history.</CardDescription>
@@ -147,3 +147,4 @@ export default function FacultyHistoryPage() {
     </div>
   );
 }
+

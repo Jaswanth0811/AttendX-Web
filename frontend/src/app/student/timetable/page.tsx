@@ -164,7 +164,7 @@ export default function StudentTimetablePage() {
             <Button
               type="submit"
               disabled={!selectedSection || fetchingTimetable}
-              className="bg-teal-650 hover:bg-teal-700 text-white font-bold h-10 shadow-md shadow-teal-500/10 disabled:opacity-50"
+              className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-10 shadow-md shadow-teal-500/10 disabled:opacity-50"
             >
               {fetchingTimetable ? 'Loading...' : 'Search Timetable'}
             </Button>
@@ -244,3 +244,4 @@ export default function StudentTimetablePage() {
     </div>
   );
 }
+

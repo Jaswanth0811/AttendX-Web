@@ -249,7 +249,7 @@ export default function SettingsPage() {
 
             {/* Save Buttons */}
             <div className="pt-4 flex justify-end">
-              <Button type="submit" disabled={isSaving} className="bg-indigo-650 hover:bg-indigo-700 text-white h-10 px-6 flex items-center gap-2">
+              <Button type="submit" disabled={isSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white h-10 px-6 flex items-center gap-2">
                 <Save className="w-4.5 h-4.5" />
                 {isSaving ? 'Saving parameters...' : 'Save Configuration'}
               </Button>
@@ -261,3 +261,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

@@ -108,7 +108,7 @@ export default function FacultySubstitutionsPage() {
   if (loading) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-650"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
       </div>
     );
   }
@@ -126,7 +126,7 @@ export default function FacultySubstitutionsPage() {
         <Card className="border-0 shadow-sm dark:bg-gray-900/60 lg:col-span-1 h-fit">
           <CardHeader>
             <CardTitle className="text-base font-semibold flex items-center gap-2">
-              <Shuffle className="w-5 h-5 text-purple-650 dark:text-purple-400" />
+              <Shuffle className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               Request Substitution
             </CardTitle>
             <CardDescription>File a cover form for administrator auditing.</CardDescription>
@@ -196,7 +196,7 @@ export default function FacultySubstitutionsPage() {
                     type="button"
                     variant={subjectOption === 'same_subject' ? 'default' : 'outline'}
                     onClick={() => setSubjectOption('same_subject')}
-                    className={subjectOption === 'same_subject' ? 'bg-purple-650 hover:bg-purple-700 text-white h-9 font-semibold' : 'border-gray-200 dark:border-gray-800 h-9 font-semibold'}
+                    className={subjectOption === 'same_subject' ? 'bg-purple-600 hover:bg-purple-700 text-white h-9 font-semibold' : 'border-gray-200 dark:border-gray-800 h-9 font-semibold'}
                   >
                     Same Course
                   </Button>
@@ -204,7 +204,7 @@ export default function FacultySubstitutionsPage() {
                     type="button"
                     variant={subjectOption === 'different_subject' ? 'default' : 'outline'}
                     onClick={() => setSubjectOption('different_subject')}
-                    className={subjectOption === 'different_subject' ? 'bg-purple-650 hover:bg-purple-700 text-white h-9 font-semibold' : 'border-gray-200 dark:border-gray-800 h-9 font-semibold'}
+                    className={subjectOption === 'different_subject' ? 'bg-purple-600 hover:bg-purple-700 text-white h-9 font-semibold' : 'border-gray-200 dark:border-gray-800 h-9 font-semibold'}
                   >
                     Different Course
                   </Button>
@@ -247,7 +247,7 @@ export default function FacultySubstitutionsPage() {
               <Button 
                 type="submit" 
                 disabled={submitting || myClasses.length === 0}
-                className="w-full bg-purple-650 hover:bg-purple-700 text-white h-10 font-bold disabled:opacity-50"
+                className="w-full bg-purple-600 hover:bg-purple-700 text-white h-10 font-bold disabled:opacity-50"
               >
                 {submitting ? 'Submitting...' : 'Submit Cover Request'}
               </Button>
@@ -329,3 +329,4 @@ export default function FacultySubstitutionsPage() {
     </div>
   );
 }
+

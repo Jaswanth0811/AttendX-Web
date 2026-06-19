@@ -56,13 +56,13 @@ export default function StudentAlertsPage() {
                         <h4 className="font-bold text-sm text-gray-905 dark:text-gray-100">{alert.subjectName}</h4>
                         <p className="text-[10px] text-red-655 dark:text-red-400 font-semibold uppercase tracking-wider mt-0.5">Status: Critical Warning</p>
                       </div>
-                      <Badge className="bg-red-500 text-white hover:bg-red-650 font-bold">
+                      <Badge className="bg-red-500 text-white hover:bg-red-600 font-bold">
                         {alert.currentPercentage}% / {alert.requiredPercentage}% Target
                       </Badge>
                     </div>
                     <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border border-red-100/40 dark:border-red-900/10 text-xs text-gray-700 dark:text-gray-300">
-                      <span className="font-bold text-red-650 dark:text-red-400 block mb-1">Actions Required</span>
-                      To restore adequate status, you must attend the next <span className="font-extrabold text-red-650 dark:text-red-400">{alert.classesNeeded} lectures</span> of this subject consecutively. Do not mark absent or miss scans.
+                      <span className="font-bold text-red-600 dark:text-red-400 block mb-1">Actions Required</span>
+                      To restore adequate status, you must attend the next <span className="font-extrabold text-red-600 dark:text-red-400">{alert.classesNeeded} lectures</span> of this subject consecutively. Do not mark absent or miss scans.
                     </div>
                   </div>
                 ))
@@ -76,7 +76,7 @@ export default function StudentAlertsPage() {
               <HelpCircle className="w-4.5 h-4.5 text-teal-600 dark:text-teal-400" />
               Attendance Advice & Best Practices
             </h3>
-            <ul className="space-y-3 text-xs text-gray-650 dark:text-gray-400 pl-4 list-disc leading-relaxed">
+            <ul className="space-y-3 text-xs text-gray-600 dark:text-gray-400 pl-4 list-disc leading-relaxed">
               <li>Keep the AttendX app updated. Outdated scanning engines might cause token validation delays.</li>
               <li>Arrive in class on time. Scans marking student presence post 15-minute delay will tag your attendance as &ldquo;late&rdquo; or fail entirely if grace period settings have closed.</li>
               <li>In case of camera hardware damage, request your lecturer to confirm your presence manually or enter the verbal backup passcode.</li>
@@ -98,11 +98,11 @@ export default function StudentAlertsPage() {
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-muted-foreground">Current Standing</span>
-                <span className="font-bold text-teal-650 dark:text-teal-400">{dashboard.overallAttendance}.00%</span>
+                <span className="font-bold text-teal-600 dark:text-teal-400">{dashboard.overallAttendance}.00%</span>
               </div>
               <div className="flex justify-between text-xs border-t border-dashed border-gray-200 dark:border-gray-800 pt-2.5">
                 <span className="text-muted-foreground">Exam Eligibility</span>
-                <Badge className="bg-emerald-50 text-emerald-650 dark:bg-emerald-950/20 dark:text-emerald-400 hover:bg-emerald-50">
+                <Badge className="bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20 dark:text-emerald-400 hover:bg-emerald-50">
                   Eligible
                 </Badge>
               </div>
@@ -120,3 +120,4 @@ export default function StudentAlertsPage() {
     </div>
   );
 }
+

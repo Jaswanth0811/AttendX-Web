@@ -1185,4 +1185,194 @@ router.get('/reports/data', async (req: Request, res: Response): Promise<void> =
   }
 });
 
+// ---- Sections CRUD ----
+router.get('/sections', async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (isFallback()) {
+      res.json({ success: true, data: store.sections });
+    } else {
+      const result = await query(`
+        SELECT s.*, d.name as department_name, sem.name as semester_name 
+        FROM sections s
+        JOIN departments d ON s.department_id = d.id
+        JOIN semesters sem ON s.semester_id = sem.id
+        ORDER BY s.name ASC
+      `);
+      res.json({ success: true, data: result.rows });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.post('/sections', async (req: Request, res: Response): Promise<void> => {
+  const { name, departmentId, semesterId, maxStudents } = req.body;
+  if (!name || !departmentId || !semesterId) {
+    res.status(400).json({ success: false, message: 'Name, departmentId, and semesterId are required' });
+    return;
+  }
+  try {
+    const id = uuidv4();
+    const now = new Date().toISOString();
+    if (isFallback()) {
+      const newSec = { id, name, departmentId, semesterId, maxStudents: maxStudents || 60, isActive: true, createdAt: now, updatedAt: now };
+      store.sections.push(newSec);
+      res.json({ success: true, data: newSec });
+    } else {
+      const result = await query(
+        'INSERT INTO sections (id, name, department_id, semester_id, max_students, is_active, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, true, $6, $6) RETURNING *',
+        [id, name, departmentId, semesterId, maxStudents || 60, now]
+      );
+      res.json({ success: true, data: result.rows[0] });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+router.delete('/sections/:id', async (req: Request, res: Response): Promise<void> => {
+  const { id } = req.params;
+  try {
+    if (isFallback()) {
+      const idx = store.sections.findIndex(s => s.id === id);
+      if (idx === -1) {
+        res.status(404).json({ success: false, message: 'Section not found' });
+        return;
+      }
+      store.sections.splice(idx, 1);
+      res.json({ success: true, message: 'Section deleted' });
+    } else {
+      const result = await query('DELETE FROM sections WHERE id = $1 RETURNING *', [id]);
+      if (result.rows.length === 0) {
+        res.status(404).json({ success: false, message: 'Section not found' });
+        return;
+      }
+      res.json({ success: true, message: 'Section deleted' });
+    }
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ---- Promote Students ----
+router.post('/students/promote', async (req: Request, res: Response): Promise<void> => {
+  const { fromYear } = req.body;
+  if (!fromYear || (fromYear !== 1 && fromYear !== 2 && fromYear !== 3)) {
+    res.status(400).json({ success: false, message: 'Invalid fromYear. Must be 1, 2, or 3' });
+    return;
+  }
+
+  try {
+    if (isFallback()) {
+      const semesters = store.semesters;
+      const sections = store.sections;
+      const sourceSemNumbers = fromYear === 1 ? [1, 2] : fromYear === 2 ? [3, 4] : [5, 6];
+      const sourceSems = semesters.filter(s => sourceSemNumbers.includes(s.number));
+      const sourceSemIds = sourceSems.map(s => s.id);
+      
+      let promotedCount = 0;
+      store.studentProfiles.forEach(student => {
+        if (sourceSemIds.includes(student.semesterId)) {
+          const currentSem = semesters.find(s => s.id === student.semesterId);
+          if (currentSem) {
+            const targetSemNumber = currentSem.number + 2;
+            const targetSem = semesters.find(s => s.number === targetSemNumber);
+            if (targetSem) {
+              student.semesterId = targetSem.id;
+              
+              const currentSec = sections.find(s => s.id === student.sectionId);
+              if (currentSec) {
+                const currentSuffix = currentSec.name.slice(-1);
+                const targetSec = sections.find(sec => 
+                  sec.semesterId === targetSem.id && 
+                  sec.departmentId === student.departmentId &&
+                  sec.name.endsWith(currentSuffix)
+                );
+                if (targetSec) {
+                  student.sectionId = targetSec.id;
+                } else {
+                  const fallbackSec = sections.find(sec => 
+                    sec.semesterId === targetSem.id && 
+                    sec.departmentId === student.departmentId
+                  );
+                  if (fallbackSec) {
+                    student.sectionId = fallbackSec.id;
+                  }
+                }
+              }
+              promotedCount++;
+            }
+          }
+        }
+      });
+      
+      res.json({ 
+        success: true, 
+        message: `Successfully promoted ${promotedCount} students from Year ${fromYear} to Year ${fromYear + 1}` 
+      });
+    } else {
+      await query('BEGIN');
+      
+      const semRes = await query('SELECT id, number FROM semesters');
+      const semesters = semRes.rows;
+      
+      const secRes = await query('SELECT id, name, department_id, semester_id FROM sections WHERE is_active = true');
+      const sections = secRes.rows;
+      
+      const sourceSemNumbers = fromYear === 1 ? [1, 2] : fromYear === 2 ? [3, 4] : [5, 6];
+      
+      const studentsRes = await query(`
+        SELECT sp.id, sp.semester_id, sp.section_id, sp.department_id, s.number as sem_number, sec.name as sec_name
+        FROM student_profiles sp
+        JOIN semesters s ON sp.semester_id = s.id
+        LEFT JOIN sections sec ON sp.section_id = sec.id
+        WHERE s.number = ANY($1::int[])
+      `, [sourceSemNumbers]);
+      
+      let promotedCount = 0;
+      for (const student of studentsRes.rows) {
+        const targetSemNumber = student.sem_number + 2;
+        const targetSem = semesters.find(s => s.number === targetSemNumber);
+        if (targetSem) {
+          let targetSecId = student.section_id;
+          if (student.sec_name) {
+            const currentSuffix = student.sec_name.slice(-1);
+            const targetSec = sections.find(sec => 
+              sec.semester_id === targetSem.id && 
+              sec.department_id === student.department_id &&
+              sec.name.endsWith(currentSuffix)
+            );
+            if (targetSec) {
+              targetSecId = targetSec.id;
+            } else {
+              const fallbackSec = sections.find(sec => 
+                sec.semester_id === targetSem.id && 
+                sec.department_id === student.department_id
+              );
+              if (fallbackSec) {
+                targetSecId = fallbackSec.id;
+              }
+            }
+          }
+          
+          await query(
+            'UPDATE student_profiles SET semester_id = $1, section_id = $2, updated_at = NOW() WHERE id = $3',
+            [targetSem.id, targetSecId, student.id]
+          );
+          promotedCount++;
+        }
+      }
+      
+      await query('COMMIT');
+      res.json({ 
+        success: true, 
+        message: `Successfully promoted ${promotedCount} students from Year ${fromYear} to Year ${fromYear + 1}` 
+      });
+    }
+  } catch (error: any) {
+    if (!isFallback()) await query('ROLLBACK');
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;

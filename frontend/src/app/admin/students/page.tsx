@@ -39,6 +39,7 @@ export default function StudentsPage() {
   const [students, setStudents] = useState<any[]>([]);
   const [departments, setDepartments] = useState<any[]>([]);
   const [sections, setSections] = useState<any[]>([]);
+  const [semesters, setSemesters] = useState<any[]>([]);
   
   const [searchQuery, setSearchQuery] = useState('');
   const [deptFilter, setDeptFilter] = useState('all');
@@ -52,7 +53,7 @@ export default function StudentsPage() {
   const [email, setEmail] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const [departmentId, setDepartmentId] = useState('');
-  const [semesterId, setSemesterId] = useState('sem-1');
+  const [semesterId, setSemesterId] = useState('');
   const [sectionId, setSectionId] = useState('');
   const [phone, setPhone] = useState('');
   const [guardianName, setGuardianName] = useState('');
@@ -68,8 +69,12 @@ export default function StudentsPage() {
     if (deptRes.success && deptRes.data) {
       setDepartments(deptRes.data.departments || []);
       setSections(deptRes.data.sections || []);
+      setSemesters(deptRes.data.semesters || []);
       if (deptRes.data.departments.length > 0 && !departmentId) {
         setDepartmentId(deptRes.data.departments[0].id);
+      }
+      if (deptRes.data.semesters.length > 0 && !semesterId) {
+        setSemesterId(deptRes.data.semesters[0].id);
       }
       if (deptRes.data.sections.length > 0 && !sectionId) {
         setSectionId(deptRes.data.sections[0].id);
@@ -98,7 +103,7 @@ export default function StudentsPage() {
     setGuardianName('');
     setGuardianPhone('');
     if (departments.length > 0) setDepartmentId(departments[0].id);
-    setSemesterId('e1000000-0000-0000-0000-000000000003'); // default sem 3 id from seeds
+    if (semesters.length > 0) setSemesterId(semesters[0].id);
     if (sections.length > 0) setSectionId(sections[0].id);
     setIsOpen(true);
   };
@@ -113,7 +118,7 @@ export default function StudentsPage() {
     setGuardianName(student.profile.guardianName || '');
     setGuardianPhone(student.profile.guardianPhone || '');
     setDepartmentId(student.profile.departmentId);
-    setSemesterId(student.profile.semesterId || 'e1000000-0000-0000-0000-000000000003');
+    setSemesterId(student.profile.semesterId || (semesters.length > 0 ? semesters[0].id : ''));
     setSectionId(student.profile.sectionId);
     setIsOpen(true);
   };
@@ -301,7 +306,7 @@ export default function StudentsPage() {
             <FileUp className="w-4 h-4 text-gray-500" />
             Bulk Import Excel
           </Button>
-          <Button onClick={handleOpenAdd} className="bg-indigo-650 hover:bg-indigo-700 text-white flex items-center gap-2 h-9 font-semibold shadow-md shadow-indigo-500/10">
+          <Button onClick={handleOpenAdd} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 h-9 font-semibold shadow-md shadow-indigo-500/10">
             <Plus className="w-4 h-4" />
             Add Student
           </Button>
@@ -519,7 +524,7 @@ export default function StudentsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
               {/* Department */}
               <div className="space-y-1.5">
                 <Label htmlFor="dept">Department</Label>
@@ -538,6 +543,24 @@ export default function StudentsPage() {
                 </select>
               </div>
 
+              {/* Year / Semester */}
+              <div className="space-y-1.5">
+                <Label htmlFor="sem">Year / Semester</Label>
+                <select
+                  id="sem"
+                  value={semesterId}
+                  onChange={(e) => setSemesterId(e.target.value)}
+                  className="w-full h-10 rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 px-3 text-sm outline-none font-medium"
+                  required
+                >
+                  {semesters.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} (Year {Math.ceil(s.number / 2)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {/* Section */}
               <div className="space-y-1.5">
                 <Label htmlFor="sec">Section</Label>
@@ -549,7 +572,10 @@ export default function StudentsPage() {
                   required
                 >
                   {sections
-                    .filter((s) => s.department_id === departmentId || s.departmentId === departmentId)
+                    .filter((s) => 
+                      (s.department_id === departmentId || s.departmentId === departmentId) &&
+                      (s.semester_id === semesterId || s.semesterId === semesterId)
+                    )
                     .map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.name}
@@ -600,7 +626,7 @@ export default function StudentsPage() {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={submitting} className="bg-indigo-650 hover:bg-indigo-700 text-white h-9 font-bold shadow-md shadow-indigo-500/10">
+              <Button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 font-bold shadow-md shadow-indigo-500/10">
                 {submitting ? 'Saving...' : editingStudent ? 'Update Details' : 'Add Student'}
               </Button>
             </DialogFooter>

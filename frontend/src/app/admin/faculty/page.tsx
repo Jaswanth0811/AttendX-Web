@@ -255,7 +255,7 @@ export default function FacultyPage() {
   if (loading && faculty.length === 0) {
     return (
       <div className="flex h-[60vh] items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-650"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
@@ -282,7 +282,7 @@ export default function FacultyPage() {
             <FileUp className="w-4 h-4 text-gray-500" />
             Bulk Import Excel
           </Button>
-          <Button onClick={handleOpenAdd} className="bg-indigo-650 hover:bg-indigo-700 text-white flex items-center gap-2 h-9 font-semibold shadow-md shadow-indigo-500/10">
+          <Button onClick={handleOpenAdd} className="bg-indigo-600 hover:bg-indigo-700 text-white flex items-center gap-2 h-9 font-semibold shadow-md shadow-indigo-500/10">
             <Plus className="w-4 h-4" />
             Add Faculty Member
           </Button>
@@ -552,7 +552,7 @@ export default function FacultyPage() {
                   Cancel
                 </Button>
               </DialogClose>
-              <Button type="submit" disabled={submitting} className="bg-indigo-650 hover:bg-indigo-700 text-white h-9 font-bold shadow-md shadow-indigo-500/10">
+              <Button type="submit" disabled={submitting} className="bg-indigo-600 hover:bg-indigo-700 text-white h-9 font-bold shadow-md shadow-indigo-500/10">
                 {submitting ? 'Saving...' : editingFaculty ? 'Update Profile' : 'Add Faculty'}
               </Button>
             </DialogFooter>
@@ -562,3 +562,4 @@ export default function FacultyPage() {
     </div>
   );
 }
+

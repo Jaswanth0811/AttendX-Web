@@ -229,7 +229,7 @@ export default function FacultyAttendanceQRPage() {
                 </div>
               </div>
 
-              <Button onClick={handleStartSession} className="w-full bg-purple-650 hover:bg-purple-700 text-white h-11 flex items-center justify-center gap-2 text-sm font-bold shadow-lg shadow-purple-500/20">
+              <Button onClick={handleStartSession} className="w-full bg-purple-600 hover:bg-purple-700 text-white h-11 flex items-center justify-center gap-2 text-sm font-bold shadow-lg shadow-purple-500/20">
                 <Play className="w-4 h-4" />
                 Start Live QR Session
               </Button>
@@ -261,7 +261,7 @@ export default function FacultyAttendanceQRPage() {
                       <span>Timing Slot</span>
                       <span className="font-semibold text-gray-900 dark:text-gray-100">{cls.startTime} - {cls.endTime}</span>
                     </div>
-                    <Button onClick={() => setSelectedSlot(cls)} className="w-full bg-purple-650 hover:bg-purple-700 text-white h-9">
+                    <Button onClick={() => setSelectedSlot(cls)} className="w-full bg-purple-600 hover:bg-purple-700 text-white h-9">
                       Select Class
                     </Button>
                   </CardContent>
@@ -333,7 +333,7 @@ export default function FacultyAttendanceQRPage() {
 
             {/* Hint */}
             <div className="p-3 rounded-lg bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/30 flex items-start gap-2 max-w-md">
-              <AlertCircle className="w-4 h-4 text-indigo-650 dark:text-indigo-400 mt-0.5 shrink-0" />
+              <AlertCircle className="w-4 h-4 text-indigo-600 dark:text-indigo-400 mt-0.5 shrink-0" />
               <p className="text-[11px] text-indigo-800 dark:text-indigo-300 text-left">
                 Security Warning: Codes rotate dynamically to block proxy attendance. Sharing codes after their validity window will fail.
               </p>
@@ -346,7 +346,7 @@ export default function FacultyAttendanceQRPage() {
           <div>
             <CardHeader className="pb-3 border-b border-gray-50 dark:border-gray-850">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <Users className="w-5 h-5 text-purple-650 dark:text-purple-400" />
+                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                 Live Monitor Panel
               </CardTitle>
               <CardDescription>Students currently registered present.</CardDescription>
@@ -364,7 +364,7 @@ export default function FacultyAttendanceQRPage() {
                 </div>
                 <div>
                   <p className="text-[10px] text-muted-foreground uppercase font-bold">Rate</p>
-                  <p className="text-lg font-extrabold text-purple-650 dark:text-purple-400 mt-0.5">{attendanceRate}%</p>
+                  <p className="text-lg font-extrabold text-purple-600 dark:text-purple-400 mt-0.5">{attendanceRate}%</p>
                 </div>
               </div>
 
@@ -407,3 +407,4 @@ export default function FacultyAttendanceQRPage() {
     </div>
   );
 }
+

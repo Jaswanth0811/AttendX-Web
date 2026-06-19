@@ -14,8 +14,8 @@ import { Shield, Loader2, Eye, EyeOff, Info } from 'lucide-react';
 export default function AdminLoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [email, setEmail] = useState('Jaswanthganta2005@outlook.com');
-  const [password, setPassword] = useState('Gsiri2310#');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -92,7 +92,7 @@ export default function AdminLoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Jaswanthganta2005@outlook.com"
+                  placeholder="admin@attendx.edu"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={isLoading}
@@ -150,8 +150,8 @@ export default function AdminLoginPage() {
                 <Info className="h-4 w-4 text-indigo-500 mt-0.5 shrink-0" />
                 <div className="text-xs text-muted-foreground">
                   <p className="font-medium text-foreground mb-1">Demo Credentials</p>
-                  <p>Email: <span className="font-mono text-indigo-600 dark:text-indigo-400">Jaswanthganta2005@outlook.com</span></p>
-                  <p>Password: <span className="font-mono text-indigo-600 dark:text-indigo-400">Gsiri2310#</span></p>
+                  <p>Email: <span className="font-mono text-indigo-600 dark:text-indigo-400">admin@attendx.edu</span></p>
+                  <p>Password: <span className="font-mono text-indigo-600 dark:text-indigo-400">admin123</span></p>
                 </div>
               </div>
             </div>

@@ -17,12 +17,14 @@ const STORAGE_KEY = 'attendx_auth';
 
 // Mock credentials for development
 const MOCK_CREDENTIALS: Record<string, { email: string; password: string; role: UserRole }> = {
-  admin: { email: 'Jaswanthganta2005@outlook.com', password: 'Gsiri2310#', role: 'admin' },
+  admin: { email: 'admin@attendx.edu', password: 'admin123', role: 'admin' },
+  admin_personal: { email: 'Jaswanthganta2005@outlook.com', password: 'Gsiri2310#', role: 'admin' },
   faculty: { email: 'dr.kumar@attendx.edu', password: 'faculty123', role: 'faculty' },
   student: { email: 'rahul.me3a@attendx.edu', password: 'student123', role: 'student' },
 };
 
 const DB_USER_MAP: Record<string, { userId: string; profileId?: string }> = {
+  'admin@attendx.edu': { userId: '89bbc404-fa9e-4c59-8b7c-137b4d2fa8fd' },
   'jaswanthganta2005@outlook.com': { userId: '89bbc404-fa9e-4c59-8b7c-137b4d2fa8fd' },
   'dr.kumar@attendx.edu': { userId: '10000000-0000-0000-0000-000000000002', profileId: '20000000-0000-0000-0000-000000000002' },
   'prof.sharma@attendx.edu': { userId: '10000000-0000-0000-0000-000000000003', profileId: '20000000-0000-0000-0000-000000000003' },

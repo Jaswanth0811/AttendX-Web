@@ -80,13 +80,17 @@ Supabase hosts the database, but you need platforms to run your server and websi
    * `PORT` = `10000` (Render's default)
 5. Create the web service. Note the deployed URL (e.g., `https://attendx-backend.onrender.com`).
 
-#### 2. Deploy the Next.js Frontend
-1. Create a Render **Web Service** or use **Vercel** (Vercel is highly recommended for hosting Next.js apps).
-2. For Vercel:
-   * Connect your GitHub repo, select the `frontend` folder as the root directory.
-   * In Environment variables, set:
-     * `NEXT_PUBLIC_API_URL` = `https://attendx-backend.onrender.com` (Your backend Render URL)
-   * Deploy!
+#### 2. Deploy the Next.js Frontend to Render (Recommended & Free Static Hosting)
+1. Log into [render.com](https://render.com) and create a **Static Site**.
+2. Connect your GitHub repository `AttendX-Web`.
+3. Set the configurations:
+   * **Name**: `attendx-frontend`
+   * **Root Directory**: `frontend`
+   * **Build Command**: `npm run build`
+   * **Publish Directory**: `out` (since Next.js builds static export files to `frontend/out/`)
+4. In the **Environment Variables** tab, add:
+   * `NEXT_PUBLIC_API_URL` = `https://attendx-backend.onrender.com` (Your backend Render URL)
+5. Click **Create Static Site** to deploy!
 
 ---
 

@@ -69,19 +69,18 @@
 <body>
     <div class="card">
         <span class="badge">DIAGNOSTIC PAGE</span>
-        <h1>Vercel Root Directory Configuration Issue Detected</h1>
-        <p>If you are seeing this page, it means Vercel is deploying the <strong>root folder</strong> of your repository instead of the <strong>frontend</strong> subfolder. This is why you got a 404 error before (since there was no homepage in the root).</p>
-        <p>To fix this and load your Next.js application, follow these simple steps:</p>
+        <h1>Monorepo Root Directory Configuration Detected</h1>
+        <p>If you are seeing this page, it means your hosting provider (e.g., Render, Vercel, etc.) is deploying or serving the <strong>root folder</strong> of your repository instead of the <strong>frontend</strong> subfolder.</p>
+        <p>To fix this and load your Next.js application, please configure the <strong>Root Directory</strong> to <code>frontend</code> in your hosting dashboard settings:</p>
         <ol>
-            <li>Go to your <strong>Vercel Dashboard</strong>.</li>
-            <li>Select the <strong>attend-x-web-frontend</strong> project.</li>
-            <li>Click on the <strong>Settings</strong> tab at the top of the project page.</li>
-            <li>Under the <strong>General</strong> tab, look for the <strong>Root Directory</strong> section.</li>
-            <li>Set the value to <code>frontend</code>.</li>
-            <li>Click <strong>Save</strong>.</li>
-            <li>Go to the <strong>Deployments</strong> tab, click the three dots next to your latest deployment, and select <strong>Redeploy</strong> (or push a new commit).</li>
+            <li>Go to your hosting provider's dashboard (e.g., Render or Vercel).</li>
+            <li>Select your frontend web service or project.</li>
+            <li>Navigate to its <strong>Settings</strong>.</li>
+            <li>Locate the <strong>Root Directory</strong> config and set it to <code>frontend</code>.</li>
+            <li>For Render Static Sites, also set the <strong>Build Command</strong> to <code>npm run build</code> and <strong>Publish Directory</strong> to <code>out</code>.</li>
+            <li>Save the changes and trigger a new deployment (redeploy or push a commit).</li>
         </ol>
-        <p>Once you change that, your Next.js application will compile and serve from the root URL correctly!</p>
+        <p>Once configured correctly, your Next.js application will compile and serve from the root URL!</p>
     </div>
 </body>
 </html>
